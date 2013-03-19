@@ -29,8 +29,8 @@ function drawBoard(){
 	
 	boardSet.remove();
 	
-	var centerX=parseFloat(getComputedStyle(paper.canvas).width)/2;
-	var centerY=parseFloat(getComputedStyle(paper.canvas).height)/2;
+	var centerX=parseFloat(getComputedStyle(document.documentElement).width)/2;
+	var centerY=parseFloat(getComputedStyle(document.documentElement).height)/2;
 	var boardRadius=Math.min(centerX,centerY)*0.9;
 	
 	var d="M"+(centerX+Math.sin(pi*2/3)*boardRadius)+" "+(centerY+Math.cos(pi*2/3)*boardRadius);
@@ -73,5 +73,5 @@ function drawBoard(){
 	}
 }
 
-document.body.onkeypress=function(e){if(e.charCode < 48 || e.charCode > 57){boardSize=e.charCode-48+2}}
-window.onresize=function(){drawBoard();}
+document.body.onkeypress=function(e){if(e.charCode>=48&&e.charCode<=57){boardSize=e.charCode-48;drawBoard();}};
+window.onresize=function(){drawBoard();};
