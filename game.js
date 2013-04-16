@@ -5,7 +5,7 @@ var π,pi=π=Math.PI;
 
 var paper=Raphael(document.body,"100%","100%");
 paper.line = function(x1,y1,x2,y2){
-	return this.path("M"+x1+" "+y1+"L"+x2+" "+y2);
+    return this.path("M"+x1+" "+y1+"L"+x2+" "+y2);
 }
 /*paper.arc = function(r, centerX, centerY, radius, startAngle, endAngle) {
 	var startX = centerX+radius*Math.cos((90-startAngle)*Math.PI/180); 
@@ -33,6 +33,8 @@ function drawBoard(){
 	var centerY=parseFloat(getComputedStyle(document.documentElement).height)/2;
 	var boardRadius=Math.min(centerX,centerY)*0.9;
 	
+    
+    //draw caves
 	var d="M"+(centerX+Math.sin(pi*2/3)*boardRadius)+" "+(centerY+Math.cos(pi*2/3)*boardRadius);
 	for(var s=0; s<6; s++){
 		var sidex1=centerX+Math.sin(pi*(2+s)/3)*boardRadius;
@@ -52,6 +54,7 @@ function drawBoard(){
 	outerBoard.attr({"fill":"#FFE"});
 	boardSet.push(outerBoard);
 	
+    //draw triangles
 	for(var s=0; s<6; s++){
 		var sidex1=centerX+Math.sin(pi*(2+s)/3)*boardRadius;
 		var sidey1=centerY+Math.cos(pi*(2+s)/3)*boardRadius;
@@ -71,6 +74,26 @@ function drawBoard(){
 			boardSet.push(paper.line(x1,y1,x2,y2));
 		}
 	}
+    
+    drawCircleAt(-2, 15);
+}
+
+
+function drawCircleAt(xFromCenter, yFromTop){
+    var equilateralTriangleHeight = Math.sqrt(3)/2.0;    
+	var centerX=parseFloat(getComputedStyle(document.documentElement).width)/2;
+	var centerY=parseFloat(getComputedStyle(document.documentElement).height)/2;
+	var boardRadius=Math.min(centerX,centerY)*0.9;
+
+	var rowCount = (4.0*boardSize) - 1.0;
+    var rowHeight = 2*boardRadius/rowCount;
+    var columnWidth = equilateralTriangleHeight*boardRadius/boardSize;
+    
+    var xFudge = (columnWidth/12)*((xFromCenter%2 + (yFromTop+1)%2)%2 + 1);
+    var yy = (yFromTop-((1+rowCount)/2.0))*rowHeight + centerY;
+    var xx = (xFromCenter -0.5)*columnWidth + centerX + xFudge;
+    boardSet.push(paper.circle(xx, yy, boardRadius/boardSize/4.0).attr({"fill":"#FAA"}));
+
 }
 
 document.body.onkeypress=function(e){if(e.charCode>=48&&e.charCode<=57){boardSize=e.charCode-48;drawBoard();}};
