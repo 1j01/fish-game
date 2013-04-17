@@ -74,25 +74,58 @@ function drawBoard(){
 			boardSet.push(paper.line(x1,y1,x2,y2));
 		}
 	}
-    
-    drawCircleAt(-2, 15);
+    for(var y = 0; y<getRowCount(); y++){
+        for(var x = minXAt(y); x < maxXAt(y); x++){
+            drawCircleAt(x, y, centerX, centerY, boardRadius);
+        }
+    }
+
+       
+}
+function minXAt(yFromTop){
+    return -1*getWidthAt(yFromTop)/2;
+}
+function maxXAt(yFromTop){
+    return getWidthAt(yFromTop)/2;
+}
+function pointsLeft(xFromCenter, yFromTop){
+    if(((1+ Math.abs(xFromCenter))%2 + Math.abs(yFromTop)%2)%2 ==1 ){
+        return true;
+    }
+    return false;
 }
 
+function getRowCount(){
+    return 4*boardSize;
+}
 
-function drawCircleAt(xFromCenter, yFromTop){
-    var equilateralTriangleHeight = Math.sqrt(3)/2.0;    
-	var centerX=parseFloat(getComputedStyle(document.documentElement).width)/2;
-	var centerY=parseFloat(getComputedStyle(document.documentElement).height)/2;
-	var boardRadius=Math.min(centerX,centerY)*0.9;
-
-	var rowCount = (4.0*boardSize) - 1.0;
-    var rowHeight = 2*boardRadius/rowCount;
-    var columnWidth = equilateralTriangleHeight*boardRadius/boardSize;
+function getWidthAt(yFromTop){
+    var section = Math.floor(yFromTop/boardSize);
+    var depthInSection = yFromTop%boardSize;
+    if(section == 1 || section ==2){
+        return 2*boardSize;
+    }
+    if(section == 3){
+        depthInSection = boardSize -depthInSection;
+    }
     
-    var xFudge = (columnWidth/12)*((xFromCenter%2 + (yFromTop+1)%2)%2 + 1);
-    var yy = (yFromTop-((1+rowCount)/2.0))*rowHeight + centerY;
-    var xx = (xFromCenter -0.5)*columnWidth + centerX + xFudge;
-    boardSet.push(paper.circle(xx, yy, boardRadius/boardSize/4.0).attr({"fill":"#FAA"}));
+    return depthInSection*2;
+    
+}
+
+function drawCircleAt(xFromCenter, yFromTop, centerX, centerY, boardRadius){
+    var equilateralTriangleHeight = Math.sqrt(3)/2.0;    
+    
+	var rowCount = getRowCount();
+    var columnCount = boardSize*2;
+    var rowHeight = 2.0*boardRadius/rowCount;
+    var columnWidth = equilateralTriangleHeight*boardRadius/columnCount;
+    
+    var xFudge = (2*columnWidth/3)*( pointsLeft(xFromCenter,yFromTop)+ 2.5);
+    var yTop =  centerY-(rowCount/2.0)*rowHeight;
+    var resultY =yTop + yFromTop*rowHeight;
+    var resultX = (xFromCenter -0.5)*2*columnWidth + centerX + xFudge;
+    boardSet.push(paper.circle(resultX, resultY, columnWidth/2.0).attr({"fill":"#FAA"}));
 
 }
 
