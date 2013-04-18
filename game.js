@@ -4,8 +4,8 @@
 var pi=Math.PI;
 
 if(window.Ralphio){
-	//var paper=new Ralphio(document.body,"100%","100%");
-	//default arguments; new is unnesesary;
+    //var paper=new Ralphio(document.body,"100%","100%");
+    //default arguments; new is unnesesary;
 	var paper=Ralphio();
 }else{
 	var paper=new Raphael(document.body,"100%","100%");
@@ -33,6 +33,8 @@ var cardTypes=["Put back a F.F.F. card.","Pick up a F.F.F. card.","Lose next tur
 var deck=[];
 
 var boardSet=paper.set();
+
+var mouse = {};
 
 drawBoard();
 
@@ -85,11 +87,20 @@ function drawBoard(){
 			boardSet.push(paper.line(x1,y1,x2,y2));
 		}
 	}
-    for(var y = 0; y<getRowCount(); y++){
-        for(var x = minXAt(y); x < maxXAt(y); x++){
-            drawCircleAt(x, y, centerX, centerY, boardRadius);
+    for(var yFromTop = 0; yFromTop<getRowCount(); yFromTop++){
+        for(var xFromCenter = minXAt(yFromTop); xFromCenter < maxXAt(yFromTop); xFromCenter++){
+            var position = getScreenCoordinates(xFromCenter, yFromTop, centerX, centerY, boardRadius);
+            if((Math.abs(xFromCenter+yFromTop+0.5))%4<=0.5 && (Math.abs(xFromCenter-yFromTop+0.5))%3<=0.75){
+        		boardSet.push(paper.circle(position.x, position.y, getColumnWidth(boardRadius)/2.0).attr({"fill":"rgba(255,255,155,1)"}));
+        	}else{
+        		boardSet.push(paper.circle(position.x, position.y, getColumnWidth(boardRadius)/2.0).attr({"fill":"rgba(255,155,155,0.5)"}));
+        	}
         }
-    }
+    } 
+    
+    var mouseSpace = getBoardCoordinates(mouse.x, mouse.y, centerX, centerY, boardRadius);
+    var position = getScreenCoordinates(mouseSpace.x, mouseSpace.y, centerX, centerY, boardRadius);
+	boardSet.push(paper.circle(position.x, position.y, getColumnWidth(boardRadius)/10.0).attr({"fill":"rgba(0,155,155,0.5)"}));
     ///Make it look all ugly and stuff.
 	//if(paper.shapes&&paper.shapes[0]&&paper.shapes[0].moveBy){
 	//	var r = Math.sqrt(centerY*centerX)/50;
@@ -115,7 +126,17 @@ function pointsLeft(xFromCenter, yFromTop){
 function getRowCount(){
     return 4*boardSize;
 }
-
+function getColumnCount(){
+    return boardSize*2;
+}
+function getRowHeight(boardRadius){
+    var rowCount = getRowCount();
+    return 2.0*boardRadius/rowCount;
+}
+function getColumnWidth(boardRadius){
+    var equilateralTriangleHeight = Math.sqrt(3)/2.0;    
+    return equilateralTriangleHeight*boardRadius/getColumnCount();
+}
 function getWidthAt(yFromTop){
     var section = Math.floor(yFromTop/boardSize);
     var depthInSection = yFromTop%boardSize;
@@ -130,24 +151,56 @@ function getWidthAt(yFromTop){
     
 }
 
-function drawCircleAt(xFromCenter, yFromTop, centerX, centerY, boardRadius){
-    var equilateralTriangleHeight = Math.sqrt(3)/2.0;    
-    
-	var rowCount = getRowCount();
-    var columnCount = boardSize*2;
-    var rowHeight = 2.0*boardRadius/rowCount;
-    var columnWidth = equilateralTriangleHeight*boardRadius/columnCount;
+function getScreenCoordinates(xFromCenter, yFromTop, centerX, centerY, boardRadius){
+    var rowCount = getRowCount();
+    var columnCount = getColumnCount();
+    var rowHeight = getRowHeight(boardRadius);
+    var columnWidth = getColumnWidth(boardRadius);
     
     var xFudge = (2*columnWidth/3)*( pointsLeft(xFromCenter,yFromTop)+ 2.5);
     var yTop = centerY-(rowCount/2.0)*rowHeight;
     var resultY = yTop + yFromTop*rowHeight;
     var resultX = (xFromCenter -0.5)*2*columnWidth + centerX + xFudge;
-	
-	if((Math.abs(xFromCenter+yFromTop+0.5))%4<=0.5 && (Math.abs(xFromCenter-yFromTop+0.5))%3<=0.75){
-		boardSet.push(paper.circle(resultX, resultY, columnWidth/2.0).attr({"fill":"rgba(255,255,155,1)"}));
-	}else{
-		boardSet.push(paper.circle(resultX, resultY, columnWidth/2.0).attr({"fill":"rgba(255,155,155,0.5)"}));
-	}
+    
+    var result = {};
+    result.x = resultX;
+    result.y = resultY;
+    return result;
+}
+function getBoardCoordinates(screenX, screenY, centerX, centerY, boardRadius){
+    var columnWidth = getColumnWidth(boardRadius);
+    var boardX = 0.5*(screenX - centerX)/columnWidth;
+    var rowHeight = getRowHeight(boardRadius);
+    var yTop = centerY - (rowHeight * getRowCount() /2);
+    var boardY = (screenY - yTop) / rowHeight;
+    var slope;
+    var offset = 0;
+    if(pointsLeft(Math.floor(boardX), Math.floor(boardY))){
+        slope = 0.5;        
+    } else {
+        slope = -0.5;
+        offset = 0.5;
+    }
+    var tileX = boardX - Math.floor(boardX);
+    var tileY = boardY - Math.floor(boardY);
+    
+    if(tileY > slope*tileX + offset){
+        boardY = Math.floor(boardY) + 1;
+    } else {
+        boardY = Math.floor(boardY);
+    }
+    boardX = Math.floor(boardX);
+    
+    var result = {};
+    result.x = boardX;
+    result.y = boardY;
+    return result;
+}
+document.body.onmousemove=function(e){
+    
+    mouse.x = e.pageX;
+    mouse.y = e.pageY;
+    drawBoard();
 }
 
 document.body.onkeypress=function(e){if(e.charCode>=48&&e.charCode<=57)drawBoard(boardSize=e.charCode-48);};
