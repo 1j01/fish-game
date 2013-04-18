@@ -1,12 +1,24 @@
 
 //We shouldn't need to munipulate the DOM except through raphael.js
 //function $(q){return document.querySelector(q);}
-var π,pi=π=Math.PI;
+//var π,pi=π=Math.PI;
+var pi=Math.PI;
 
-var paper=Raphael(document.body,"100%","100%");
-paper.line = function(x1,y1,x2,y2){
-	return this.path("M"+x1+" "+y1+"L"+x2+" "+y2);
+if(window.Ralphio){
+	//var paper=new Ralphio(document.body,"100%","100%");
+	//default arguments; new is unnesesary;
+	var paper=Ralphio();
+}else{
+	var paper=new Raphael(document.body,"100%","100%");
 }
+
+paper.line = paper.line
+//
+||	/*
+\\  */
+function(x1,y1,x2,y2){
+	return this.path("M"+x1+" "+y1+"L"+x2+" "+y2);
+};
 /*paper.arc = function(r, centerX, centerY, radius, startAngle, endAngle) {
 	var startX = centerX+radius*Math.cos((90-startAngle)*Math.PI/180); 
 	var startY = centerY-radius*Math.sin((90-startAngle)*Math.PI/180);
@@ -69,6 +81,12 @@ function drawBoard(){
 			var x2=side2x1+(side2x2-side2x1)*(i/boardSize);
 			var y2=side2y1+(side2y2-side2y1)*(i/boardSize);
 			boardSet.push(paper.line(x1,y1,x2,y2));
+		}
+	}
+	if(paper.shapes&&paper.shapes[0]&&paper.shapes[0].moveBy){
+		var r = Math.sqrt(centerY*centerX)/50;
+		for(var i=0;i<paper.shapes.length;i++){
+			paper.shapes[i].moveBy((Math.random()-0.5)*r,(Math.random()-0.5)*r,(Math.random()-0.5)*r,(Math.random()-0.5)*r);
 		}
 	}
 }
