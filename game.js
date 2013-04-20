@@ -35,7 +35,8 @@ var deck=[];
 var boardSet=paper.set();
 
 var mouse = {};
-
+var center = {};
+var boardRadius;
 drawBoard();
 
 function drawBoard(){
@@ -44,8 +45,11 @@ function drawBoard(){
 	
 	var centerX=parseFloat(getComputedStyle(document.documentElement).width)/2;
 	var centerY=parseFloat(getComputedStyle(document.documentElement).height)/2;
-	var boardRadius=Math.min(centerX,centerY)*0.9;
 	
+    boardRadius=Math.min(centerX,centerY)*0.9;
+	center.x = centerX;
+    center.y = centerY;
+    
     
     /// draw caves
 	var d="M"+(centerX+Math.sin(pi*2/3)*boardRadius)+" "+(centerY+Math.cos(pi*2/3)*boardRadius);
@@ -98,10 +102,12 @@ function drawBoard(){
         }
     } 
     
-    var mouseSpace = getBoardCoordinates(mouse.x, mouse.y, centerX, centerY, boardRadius);
-    var position = getScreenCoordinates(mouseSpace.x, mouseSpace.y, centerX, centerY, boardRadius);
-	boardSet.push(paper.circle(position.x, position.y, getColumnWidth(boardRadius)/10.0).attr({"fill":"rgba(0,155,155,0.5)"}));
-    ///Make it look all ugly and stuff.
+  //  var mouseSpace = getBoardCoordinates(mouse.x, mouse.y, centerX, centerY, boardRadius);
+//    var position = getScreenCoordinates(mouseSpace.x, mouseSpace.y, centerX, centerY, boardRadius);
+//	boardSet.push(paper.circle(position.x, position.y, getColumnWidth(boardRadius)/10.0).attr({"fill":"rgba(0,155,155,0.5)"}));
+  
+  
+  ///Make it look all ugly and stuff.
 	//if(paper.shapes&&paper.shapes[0]&&paper.shapes[0].moveBy){
 	//	var r = Math.sqrt(centerY*centerX)/50;
 	//	for(var i=0;i<paper.shapes.length;i++){
@@ -109,6 +115,16 @@ function drawBoard(){
 	//	}
 	//}
        
+}
+
+function drawMouseCircle(){
+    var mouseSpace = getBoardCoordinates(mouse.x, mouse.y, center.x, center.y, boardRadius);
+    var position = getScreenCoordinates(mouseSpace.x, mouseSpace.y, center.x, center.y, boardRadius);
+    var r = Math.random()*255;    
+    var g = Math.random()*255;    
+    var b = Math.random()*255;
+    boardSet.push(paper.circle(position.x, position.y, getColumnWidth(boardRadius)/10.0).attr({"fill":"rgba(" + r + ","+ g + "," + b +",0.5)"}));
+    boardSet.push(paper.circle(mouse.x, mouse.y, getColumnWidth(boardRadius)/15.0).attr({"fill":"rgba(" + r + ","+ g + "," + b +",0.5)"}));
 }
 function minXAt(yFromTop){
     return -1*getWidthAt(yFromTop)/2;
@@ -176,10 +192,10 @@ function getBoardCoordinates(screenX, screenY, centerX, centerY, boardRadius){
     var slope;
     var offset = 0;
     if(pointsLeft(Math.floor(boardX), Math.floor(boardY))){
-        slope = 0.5;        
+        slope = 1;        
     } else {
-        slope = -0.5;
-        offset = 0.5;
+        slope = -1;
+        offset = 1;
     }
     var tileX = boardX - Math.floor(boardX);
     var tileY = boardY - Math.floor(boardY);
@@ -200,7 +216,8 @@ document.body.onmousemove=function(e){
     
     mouse.x = e.pageX;
     mouse.y = e.pageY;
-    drawBoard();
+    drawMouseCircle();
+//  drawBoard();
 }
 
 document.body.onkeypress=function(e){if(e.charCode>=48&&e.charCode<=57)drawBoard(boardSize=e.charCode-48);};
